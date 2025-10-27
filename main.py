@@ -2,7 +2,8 @@
 
 import logging
 from dotenv import load_dotenv
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
+from telegram import Update
 
 load_dotenv()
 from config import TELEGRAM_BOT_TOKEN, SESSION_TIMEOUT
