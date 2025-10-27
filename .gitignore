@@ -1,0 +1,8 @@
+# .gitignore
+
+# Python
+*.pyc
+__pycache__/
+
+# Config file
+config.py
