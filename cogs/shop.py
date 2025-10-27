@@ -32,7 +32,7 @@ async def send_shop_message(chat_id: int, context: ContextTypes.DEFAULT_TYPE, pa
         parse_mode="Markdown"
     )
 
-async def shop_callback_handler(update: Update, context: ContextTypes.DEFAULT_type) -> None:
+async def shop_callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handles button presses in the shop."""
     query = update.callback_query
     await query.answer()
