@@ -5,5 +5,4 @@
 __pycache__/
 
 # Config file
-config.py
 .env
