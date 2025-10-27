@@ -1,7 +1,10 @@
 # main.py
 
 import logging
+from dotenv import load_dotenv
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
+
+load_dotenv()
 from config import TELEGRAM_BOT_TOKEN, SESSION_TIMEOUT
 from cogs.games import spin_command, bowl_command, dice_command
 from cogs.character_management import start_command, inventory_command, language_command, stop_command, redeem_command, end_session, mood_command
