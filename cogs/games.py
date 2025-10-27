@@ -6,7 +6,8 @@ import random
 from telegram import Update
 from telegram.ext import ContextTypes
 from telegram.constants import DiceEmoji
-from utils.db import get_user, update_user_balance
+from utils.db import get_user, update_user_balance, update_last_claim
+from config import MIN_CLAIM_AMOUNT, MAX_CLAIM_AMOUNT
 
 # In-memory storage for daily spin/game counts
 daily_spin_data = {}
@@ -56,6 +57,36 @@ async def spin_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         f"🔄 Spins today: **{daily_spin_data[user_id]['spin_count']}/{MAX_PLAYS_PER_DAY}**"
     )
     await update.message.reply_text(result_text, parse_mode="Markdown")
+
+
+async def claim_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Allows a user to claim their daily OwO Coins."""
+    user_id = update.effective_user.id
+    user = await get_user(user_id)
+    today = datetime.date.today().isoformat()
+
+    if user and user.get("last_claim_date") == today:
+        await update.message.reply_text("❌ You have already claimed your daily OwO Coins. Come back tomorrow!")
+        return
+
+    claim_amount = random.randint(MIN_CLAIM_AMOUNT, MAX_CLAIM_AMOUNT)
+    await update_user_balance(user_id, claim_amount)
+    await update_last_claim(user_id)
+
+    user = await get_user(user_id)
+    new_balance = user.get("balance", 0)
+
+    await update.message.reply_text(
+        f"🎉 You have claimed **{claim_amount} OwO Coins**!\n"
+        f"🏆 Your new balance is **{new_balance} OwO Coins**."
+    )
+
+async def balance_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Displays the user's OwO Coin balance."""
+    user_id = update.effective_user.id
+    user = await get_user(user_id)
+    balance = user.get("balance", 0) if user else 0
+    await update.message.reply_text(f"💰 Your current balance is: {balance} OwO Coins")
 
 
 async def bowl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

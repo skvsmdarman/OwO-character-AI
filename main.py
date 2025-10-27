@@ -7,10 +7,11 @@ from telegram import Update
 
 load_dotenv()
 from config import TELEGRAM_BOT_TOKEN, SESSION_TIMEOUT
-from cogs.games import spin_command, bowl_command, dice_command
+from cogs.games import spin_command, bowl_command, dice_command, claim_command, balance_command
 from cogs.character_management import start_command, inventory_command, language_command, stop_command, redeem_command, end_session, mood_command
 from cogs.shop import shop_command, shop_callback_handler
-from cogs.owner import add_artist, remove_artist, create_character, create_redeem_code
+from cogs.owner import add_artist, remove_artist, create_redeem_code, create_character_handler
+from cogs.fun import reply_command, owo_command
 from utils.pollinations_api import generate_response_with_history
 from cogs.character_management import user_sessions
 from utils.db import get_user
@@ -67,8 +68,12 @@ def main() -> None:
     application.add_handler(CommandHandler("mood", mood_command))
     application.add_handler(CommandHandler("add_artist", add_artist))
     application.add_handler(CommandHandler("remove_artist", remove_artist))
-    application.add_handler(CommandHandler("create_character", create_character))
+    application.add_handler(create_character_handler)
     application.add_handler(CommandHandler("create_redeem_code", create_redeem_code))
+    application.add_handler(CommandHandler("reply", reply_command))
+    application.add_handler(CommandHandler("owo", owo_command))
+    application.add_handler(CommandHandler("claim", claim_command))
+    application.add_handler(CommandHandler("balance", balance_command))
 
     # Register callback query handlers
     application.add_handler(CallbackQueryHandler(shop_callback_handler, pattern="^buy_|^shop_next$"))

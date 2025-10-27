@@ -1,6 +1,7 @@
 # utils/db.py
 
 import motor.motor_asyncio
+import datetime
 from config import MONGO_URI, DB_NAME
 
 # Establish a connection to the MongoDB server
@@ -17,6 +18,15 @@ redeem_codes_collection = db["redeem_codes"]
 async def get_user(user_id):
     """Fetches a user from the database."""
     return await users_collection.find_one({"_id": user_id})
+
+async def update_last_claim(user_id):
+    """Updates the last claim date for a user."""
+    today = datetime.date.today().isoformat()
+    await users_collection.update_one(
+        {"_id": user_id},
+        {"$set": {"last_claim_date": today}},
+        upsert=True
+    )
 
 async def update_user_balance(user_id, amount):
     """Updates a user's balance."""

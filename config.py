@@ -18,3 +18,11 @@ OWNER_ID = int(os.environ.get("OWNER_ID", 6449644059))
 
 # Session Timeout (in seconds)
 SESSION_TIMEOUT = 3600  # 1 hour
+
+# Daily Claim Configuration
+MIN_CLAIM_AMOUNT = int(os.environ.get("MIN_CLAIM_AMOUNT", 50))
+MAX_CLAIM_AMOUNT = int(os.environ.get("MAX_CLAIM_AMOUNT", 200))
+
+# AI Model Configuration
+NORMAL_MODEL = "openai"
+INTIMATE_MODEL = "mistral"
