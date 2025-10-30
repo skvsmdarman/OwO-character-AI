@@ -58,6 +58,8 @@ async def spin_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     )
     await update.message.reply_text(result_text, parse_mode="Markdown")
 
+roll_command = dice_command
+
 
 async def claim_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Allows a user to claim their daily OwO Coins."""

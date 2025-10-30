@@ -7,8 +7,9 @@ from telegram import Update
 
 load_dotenv()
 from config import TELEGRAM_BOT_TOKEN, SESSION_TIMEOUT
-from cogs.games import spin_command, bowl_command, dice_command, claim_command, balance_command
-from cogs.character_management import start_command, inventory_command, language_command, stop_command, redeem_command, end_session, mood_command
+from cogs.games import spin_command, bowl_command, dice_command, claim_command, balance_command, roll_command
+from cogs.character_management import start_command, inventory_command, language_command, stop_command, redeem_command, end_session, mood_command, inventory_callback_handler, inline_inventory
+from telegram.ext import InlineQueryHandler
 from cogs.shop import shop_command, shop_callback_handler
 from cogs.owner import add_artist, remove_artist, create_redeem_code, create_character_handler
 from cogs.fun import reply_command, owo_command
@@ -60,6 +61,7 @@ def main() -> None:
     application.add_handler(CommandHandler("spin", spin_command))
     application.add_handler(CommandHandler("bowl", bowl_command))
     application.add_handler(CommandHandler("dice", dice_command))
+    application.add_handler(CommandHandler("roll", roll_command))
     application.add_handler(CommandHandler("inventory", inventory_command))
     application.add_handler(CommandHandler("language", language_command))
     application.add_handler(CommandHandler("shop", shop_command))
@@ -76,10 +78,14 @@ def main() -> None:
     application.add_handler(CommandHandler("balance", balance_command))
 
     # Register callback query handlers
-    application.add_handler(CallbackQueryHandler(shop_callback_handler, pattern="^buy_|^shop_next$"))
+    application.add_handler(CallbackQueryHandler(shop_callback_handler, pattern="^buy_|^shop_next_|^shop_prev_"))
+    application.add_handler(CallbackQueryHandler(inventory_callback_handler, pattern="^inv_next_|^inv_prev_"))
 
     # Register message handler for character conversations
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+
+    # Register inline query handler
+    application.add_handler(InlineQueryHandler(inline_inventory))
 
     # Run the bot
     application.run_polling()

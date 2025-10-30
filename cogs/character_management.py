@@ -1,7 +1,8 @@
 # cogs/character_management.py
 
 import asyncio
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle, InputTextMessageContent
+from telegram.ext import InlineQueryHandler
 from telegram.ext import ContextTypes
 from utils.db import get_user, get_user_characters, get_character, set_user_language, get_redeem_code, mark_code_as_used, update_user_balance, add_character_to_user
 from config import SESSION_TIMEOUT
@@ -85,16 +86,67 @@ async def inventory_command(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         await update.message.reply_text("📦 Your inventory is empty. Use /shop to get characters!")
         return
 
-    buttons = []
-    for char_id in user_characters:
-        character = await get_character(char_id)
-        if character:
-            buttons.append([InlineKeyboardButton(
-                f"{character['name']} - {character['title']}",
-                callback_data=f"view_{char_id}"
-            )])
+    context.user_data['inventory_page'] = 0
+    await send_inventory_message(update, context)
 
-    await update.message.reply_text("📚 Your Inventory:", reply_markup=InlineKeyboardMarkup(buttons))
+async def send_inventory_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Sends the inventory message with character details and navigation."""
+    user_id = update.effective_user.id
+    user_characters = await get_user_characters(user_id)
+    page = context.user_data.get('inventory_page', 0)
+
+    if not user_characters:
+        await update.effective_message.reply_text("📦 Your inventory is empty.")
+        return
+
+    character_id = user_characters[page]
+    character = await get_character(character_id)
+
+    if not character:
+        await update.effective_message.reply_text("❌ Character not found.")
+        return
+
+    buttons = [
+        [InlineKeyboardButton("Start Chat", url=f"https://t.me/{context.bot.username}?start={character_id}")],
+        [
+            InlineKeyboardButton("Previous", callback_data=f"inv_prev_{user_id}"),
+            InlineKeyboardButton("Next", callback_data=f"inv_next_{user_id}")
+        ]
+    ]
+
+    await context.bot.send_photo(
+        chat_id=update.effective_chat.id,
+        photo=character['avatar_url'],
+        caption=f"**{character['name']}**\n{character['title']}",
+        reply_markup=InlineKeyboardMarkup(buttons),
+        parse_mode="Markdown"
+    )
+
+async def inventory_callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handles button presses in the inventory."""
+    query = update.callback_query
+    await query.answer()
+    data = query.data
+    user_id = query.from_user.id
+
+    parts = data.split("_")
+    action = parts[1]
+
+    if user_id != int(parts[2]):
+        await query.answer("This is not for you.", show_alert=True)
+        return
+
+    page = context.user_data.get('inventory_page', 0)
+    user_characters = await get_user_characters(user_id)
+
+    if action == "next":
+        page = (page + 1) % len(user_characters)
+    elif action == "prev":
+        page = (page - 1 + len(user_characters)) % len(user_characters)
+
+    context.user_data['inventory_page'] = page
+    await query.message.delete()
+    await send_inventory_message(query, context)
 
 
 async def language_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -163,3 +215,28 @@ async def redeem_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await update.message.reply_text(f"✅ You have redeemed the character: {character_name}!")
 
     await mark_code_as_used(code, user_id)
+
+
+async def inline_inventory(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handles the inline query for the user's inventory."""
+    query = update.inline_query
+    if not query.query:
+        return
+
+    user_id = query.from_user.id
+    user_characters = await get_user_characters(user_id)
+    results = []
+
+    for character_id in user_characters:
+        character = await get_character(character_id)
+        if character and query.query.lower() in character['name'].lower():
+            results.append(
+                InlineQueryResultArticle(
+                    id=character_id,
+                    title=character['name'],
+                    description=character['title'],
+                    thumb_url=character['avatar_url'],
+                    input_message_content=InputTextMessageContent(f"/start {character_id}")
+                )
+            )
+    await query.answer(results)
