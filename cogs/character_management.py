@@ -91,7 +91,7 @@ async def inventory_command(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
 async def send_inventory_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Sends the inventory message with character details and navigation."""
-    user_id = update.effective_user.id
+    user_id = update.from_user.id
     user_characters = await get_user_characters(user_id)
     page = context.user_data.get('inventory_page', 0)
 

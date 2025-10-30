@@ -2,7 +2,7 @@
 
 import logging
 from dotenv import load_dotenv
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes, JobQueue
 from telegram import Update
 
 load_dotenv()
@@ -54,7 +54,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 def main() -> None:
     """Starts the bot."""
-    application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+    job_queue = JobQueue()
+    application = Application.builder().token(TELEGRAM_BOT_TOKEN).job_queue(job_queue).build()
 
     # Register command handlers
     application.add_handler(CommandHandler("start", start_command))

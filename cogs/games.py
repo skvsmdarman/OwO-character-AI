@@ -33,7 +33,10 @@ async def spin_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await asyncio.sleep(3)
     dice_value = spinner_msg.dice.value
 
-    await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=spinner_msg.message_id)
+    try:
+        await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=spinner_msg.message_id)
+    except Exception:
+        pass  # Ignore if the message can't be deleted
 
     if dice_value >= 60:
         win = 100
@@ -106,7 +109,10 @@ async def bowl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await asyncio.sleep(3)
     dice_value = bowl_msg.dice.value
 
-    await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=bowl_msg.message_id)
+    try:
+        await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=bowl_msg.message_id)
+    except Exception:
+        pass  # Ignore if the message can't be deleted
 
     if dice_value in [3, 4, 5, 6]:
         win = 500
@@ -149,7 +155,10 @@ async def dice_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await asyncio.sleep(3)
     dice_value = dice_msg.dice.value
 
-    await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=dice_msg.message_id)
+    try:
+        await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=dice_msg.message_id)
+    except Exception:
+        pass  # Ignore if the message can't be deleted
 
     wins = {6: 150, 5: 120, 4: 100, 3: 80, 2: 50, 1: 25}
     win = wins.get(dice_value, 20)
